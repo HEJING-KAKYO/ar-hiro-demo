@@ -3,66 +3,193 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>HIRO AR</title>
-
-    <!-- A-Frame 本体 -->
+    <title>Panda AR</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-
-    <!-- AR.js（マーカーAR用） -->
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   </head>
 
-  <body style="margin: 0; overflow: hidden;">
+  <body style="margin:0; overflow:hidden;">
     <a-scene
       embedded
       arjs="sourceType: webcam; debugUIEnabled: false;"
       vr-mode-ui="enabled: false"
       renderer="logarithmicDepthBuffer: true;"
     >
-
-      <!-- ======= HIROマーカーの設定 ======= -->
       <a-marker preset="hiro">
-        <!-- 例1: 回転するカラフルなボックス -->
-        <a-box
+
+        <!-- ===== 落地阴影（静止，制造跳起感） ===== -->
+        <a-cylinder
+          position="0 0.01 0"
+          radius="0.38"
+          height="0.02"
+          color="#000000"
+          opacity="0.25"
+          animation="property: scale; from: 1 1 1; to: 0.65 1 0.65;
+                     dir: alternate; loop: true; dur: 600; easing: easeInOutSine"
+        ></a-cylinder>
+
+        <!-- ===== 熊猫整体组（跳动动画作用在这里） ===== -->
+        <a-entity
+          id="panda"
           position="0 0.5 0"
-          rotation="0 45 0"
-          scale="1 1 1"
-          color="#FF6B6B"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 2000; easing: linear"
-        ></a-box>
+          animation="property: position; from: 0 0.5 0; to: 0 1.4 0;
+                     dir: alternate; loop: true; dur: 600; easing: easeInOutSine"
+        >
 
-        <!-- 例2: ボックスの上に浮かぶ球体 -->
-        <a-sphere
-          position="0 2 0"
-          radius="0.5"
-          color="#4ECDC4"
-          animation="property: position; to: 0 2.5 0; dir: alternate; loop: true; dur: 1000"
-        ></a-sphere>
+          <!-- ── 身体（白色大椭球） ── -->
+          <a-sphere
+            position="0 0 0"
+            radius="0.5"
+            scale="1 1.1 0.9"
+            color="#FFFFFF"
+          ></a-sphere>
 
-        <!-- 例3: 地面のリング -->
-        <a-torus
-          position="0 0.1 0"
-          rotation="90 0 0"
-          radius="0.8"
-          radius-tubular="0.05"
-          color="#FFE66D"
-          animation="property: scale; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 800"
-        ></a-torus>
+          <!-- ── 肚子（浅灰圆，贴在身体正面） ── -->
+          <a-sphere
+            position="0 -0.05 0.42"
+            radius="0.28"
+            scale="1 1.1 0.5"
+            color="#EDEDED"
+          ></a-sphere>
 
-        <!-- 例4: テキスト表示 -->
-        <a-text
-          value="Hello AR!"
-          position="0 3 0"
-          align="center"
-          color="#FFFFFF"
-          scale="2 2 2"
-        ></a-text>
+          <!-- ── 左前臂（黑色圆柱，斜出去） ── -->
+          <a-cylinder
+            position="-0.52 0.1 0.1"
+            radius="0.13"
+            height="0.45"
+            color="#1A1A1A"
+            rotation="0 0 60"
+          ></a-cylinder>
+
+          <!-- ── 右前臂 ── -->
+          <a-cylinder
+            position="0.52 0.1 0.1"
+            radius="0.13"
+            height="0.45"
+            color="#1A1A1A"
+            rotation="0 0 -60"
+          ></a-cylinder>
+
+          <!-- ── 左后腿 ── -->
+          <a-cylinder
+            position="-0.25 -0.55 0"
+            radius="0.14"
+            height="0.38"
+            color="#1A1A1A"
+            rotation="15 0 10"
+          ></a-cylinder>
+
+          <!-- ── 右后腿 ── -->
+          <a-cylinder
+            position="0.25 -0.55 0"
+            radius="0.14"
+            height="0.38"
+            color="#1A1A1A"
+            rotation="15 0 -10"
+          ></a-cylinder>
+
+          <!-- ── 头（白色球，位于身体上方） ── -->
+          <a-sphere
+            position="0 0.7 0"
+            radius="0.42"
+            color="#FFFFFF"
+          ></a-sphere>
+
+          <!-- ── 左耳（黑色球） ── -->
+          <a-sphere
+            position="-0.3 1.05 0"
+            radius="0.15"
+            color="#1A1A1A"
+          ></a-sphere>
+
+          <!-- ── 右耳 ── -->
+          <a-sphere
+            position="0.3 1.05 0"
+            radius="0.15"
+            color="#1A1A1A"
+          ></a-sphere>
+
+          <!-- ── 左眼周黑斑（椭圆形，贴脸） ── -->
+          <a-sphere
+            position="-0.16 0.73 0.36"
+            radius="0.14"
+            scale="1 0.85 0.5"
+            color="#1A1A1A"
+          ></a-sphere>
+
+          <!-- ── 右眼周黑斑 ── -->
+          <a-sphere
+            position="0.16 0.73 0.36"
+            radius="0.14"
+            scale="1 0.85 0.5"
+            color="#1A1A1A"
+          ></a-sphere>
+
+          <!-- ── 左眼白 ── -->
+          <a-sphere
+            position="-0.16 0.74 0.46"
+            radius="0.055"
+            color="#FFFFFF"
+          ></a-sphere>
+
+          <!-- ── 右眼白 ── -->
+          <a-sphere
+            position="0.16 0.74 0.46"
+            radius="0.055"
+            color="#FFFFFF"
+          ></a-sphere>
+
+          <!-- ── 左瞳孔（黑色，带眨眼动画） ── -->
+          <a-sphere
+            position="-0.16 0.74 0.5"
+            radius="0.032"
+            color="#000000"
+            animation="property: scale; from: 1 1 1; to: 1 0.08 1;
+                       dir: alternate; loop: true; dur: 150;
+                       delay: 2800; easing: easeInOutQuad"
+          ></a-sphere>
+
+          <!-- ── 右瞳孔（同步眨眼） ── -->
+          <a-sphere
+            position="0.16 0.74 0.5"
+            radius="0.032"
+            color="#000000"
+            animation="property: scale; from: 1 1 1; to: 1 0.08 1;
+                       dir: alternate; loop: true; dur: 150;
+                       delay: 2800; easing: easeInOutQuad"
+          ></a-sphere>
+
+          <!-- ── 鼻子（黑色小椭球） ── -->
+          <a-sphere
+            position="0 0.63 0.42"
+            radius="0.07"
+            scale="1.2 0.8 0.6"
+            color="#1A1A1A"
+          ></a-sphere>
+
+          <!-- ── 嘴巴（圆环切片模拟弧线） ── -->
+          <a-torus
+            position="0 0.56 0.41"
+            radius="0.07"
+            radius-tubular="0.012"
+            arc="180"
+            rotation="0 0 180"
+            color="#1A1A1A"
+          ></a-torus>
+
+          <!-- ── 尾巴（小白球，身体背后） ── -->
+          <a-sphere
+            position="0 -0.15 -0.48"
+            radius="0.1"
+            color="#FFFFFF"
+          ></a-sphere>
+
+        </a-entity>
+        <!-- /panda -->
 
       </a-marker>
 
-      <!-- カメラ -->
       <a-entity camera></a-entity>
-
     </a-scene>
   </body>
 </html>
