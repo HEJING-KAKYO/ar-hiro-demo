@@ -83,20 +83,15 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        // --- 1. 动态绘制日语标语牌 ---
+        // --- 1. 动态绘制日语标语牌 (保持不变) ---
         const canvas = document.getElementById("signCanvas");
         const ctx = canvas.getContext("2d");
 
-        // 画木板底色
         ctx.fillStyle = "#F5DEB3"; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // 画边框
         ctx.lineWidth = 16;
         ctx.strokeStyle = "#8B4513";
         ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
-
-        // 写字 (两行日文)
         ctx.fillStyle = "#333333";
         ctx.font = "bold 52px sans-serif";
         ctx.textAlign = "center";
@@ -104,38 +99,80 @@
         ctx.fillText("imd研究室へ", canvas.width / 2, canvas.height / 2 - 35);
         ctx.fillText("ようこそ！", canvas.width / 2, canvas.height / 2 + 40);
 
-        // --- 2. 交互时间轴控制 ---
-        let isAnimating = false; // 防止用户在动画期间重复点击
+        // --- 2. 交互与状态控制 (已修复) ---
+        let isAnimating = false;
+        let isMarkerVisible = false; // 记录摄像头是否拍到了 Hiro 图标
+        let animationTimeouts = [];  // 用于存放所有的定时器，方便随时掐断
 
-        // 监听全局点击/触摸事件
+        const marker = document.querySelector("a-marker");
+        const sign = document.querySelector("#welcomeSign");
+        const bowLayer = document.querySelector("#bowLayer");
+
+        // 【新增】监听摄像头是否丢失了目标
+        marker.addEventListener("markerFound", () => {
+          isMarkerVisible = true;
+        });
+
+        marker.addEventListener("markerLost", () => {
+          isMarkerVisible = false;
+          resetAnimationState(); // 一旦移开镜头，立刻终止并重置所有动作
+        });
+
+        // 重置函数：清空定时器，强制归位
+        function resetAnimationState() {
+          // 掐断所有后台还在跑的倒计时
+          animationTimeouts.forEach(clearTimeout);
+          animationTimeouts = [];
+
+          // 扒掉所有临时加上的动画属性
+          sign.removeAttribute("animation__show");
+          sign.removeAttribute("animation__hide");
+          bowLayer.removeAttribute("animation__bow");
+
+          // 强制物理归位（牌子缩回，身体立直）
+          sign.setAttribute("scale", "0 0 0");
+          bowLayer.setAttribute("rotation", "0 0 0");
+
+          isAnimating = false; // 解除防抖锁定
+        }
+
+        // 监听全局点击
         window.addEventListener("click", () => {
-          if (isAnimating) return;
+          // 【防御】如果没看到熊猫，或者正在播放中，就无视点击
+          if (!isMarkerVisible || isAnimating) return;
+          
           isAnimating = true;
 
-          const sign = document.querySelector("#welcomeSign");
-          const bowLayer = document.querySelector("#bowLayer");
-
-          // 动作 A：弹出牌子（带有弹性特效）
+          // 动作 A：弹出牌子
+          // 【修复】先移除旧动画，触发浏览器重绘，再赋新动画，逼迫 A-Frame 重新播放
+          sign.removeAttribute("animation__hide");
+          void sign.offsetWidth; // 魔法代码：强制刷新 DOM 状态
           sign.setAttribute("animation__show", "property: scale; from: 0 0 0; to: 1 1 1; dur: 600; easing: easeOutElastic");
 
-          // 动作 B：展示 3 秒后执行收回
-          setTimeout(() => {
+          // 动作 B：3秒后收回牌子
+          let t1 = setTimeout(() => {
+            sign.removeAttribute("animation__show");
+            void sign.offsetWidth; 
             sign.setAttribute("animation__hide", "property: scale; from: 1 1 1; to: 0 0 0; dur: 300; easing: easeInBack");
 
-            // 动作 C：等待牌子收回后，开始鞠躬
-            setTimeout(() => {
-              // 给鞠躬层添加向下弯腰的动画 (loop: 2 配合 alternate 代表下去再上来)
+            // 动作 C：牌子收回后，开始鞠躬
+            let t2 = setTimeout(() => {
+              bowLayer.removeAttribute("animation__bow");
+              void bowLayer.offsetWidth;
               bowLayer.setAttribute("animation__bow", "property: rotation; from: 0 0 0; to: 40 0 0; dir: alternate; loop: 2; dur: 500; easing: easeInOutSine");
 
-              // 动作 D：等待鞠躬完成 (500ms * 2 = 1000ms)，清理动画属性并解除锁定
-              setTimeout(() => {
+              // 动作 D：鞠躬完成，解除锁定
+              let t3 = setTimeout(() => {
                 bowLayer.removeAttribute("animation__bow");
                 isAnimating = false;
               }, 1000);
+              animationTimeouts.push(t3);
 
-            }, 350); // 牌子收回用时300ms，预留50ms缓冲
+            }, 350);
+            animationTimeouts.push(t2);
 
           }, 3000);
+          animationTimeouts.push(t1);
         });
       });
     </script>
