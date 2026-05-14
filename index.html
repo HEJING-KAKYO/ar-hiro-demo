@@ -83,7 +83,7 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        // --- 1. 动态绘制日语标语牌 (保持不变) ---
+        // --- 1. 动态绘制日语标语牌 ---
         const canvas = document.getElementById("signCanvas");
         const ctx = canvas.getContext("2d");
 
@@ -99,54 +99,50 @@
         ctx.fillText("imd研究室へ", canvas.width / 2, canvas.height / 2 - 35);
         ctx.fillText("ようこそ！", canvas.width / 2, canvas.height / 2 + 40);
 
-        // --- 2. 交互与状态控制 (已修复) ---
+        // --- 2. 交互与状态控制 ---
         let isAnimating = false;
-        let isMarkerVisible = false; // 记录摄像头是否拍到了 Hiro 图标
-        let animationTimeouts = [];  // 用于存放所有的定时器，方便随时掐断
+        let isMarkerVisible = false; 
+        let animationTimeouts = [];  
 
         const marker = document.querySelector("a-marker");
         const sign = document.querySelector("#welcomeSign");
         const bowLayer = document.querySelector("#bowLayer");
 
-        // 【新增】监听摄像头是否丢失了目标
+        // 监听摄像头是否丢失了目标
         marker.addEventListener("markerFound", () => {
           isMarkerVisible = true;
         });
 
         marker.addEventListener("markerLost", () => {
           isMarkerVisible = false;
-          resetAnimationState(); // 一旦移开镜头，立刻终止并重置所有动作
+          resetAnimationState(); 
         });
 
-        // 重置函数：清空定时器，强制归位
+        // 重置函数
         function resetAnimationState() {
-          // 掐断所有后台还在跑的倒计时
           animationTimeouts.forEach(clearTimeout);
           animationTimeouts = [];
 
-          // 扒掉所有临时加上的动画属性
           sign.removeAttribute("animation__show");
           sign.removeAttribute("animation__hide");
           bowLayer.removeAttribute("animation__bow");
 
-          // 强制物理归位（牌子缩回，身体立直）
           sign.setAttribute("scale", "0 0 0");
           bowLayer.setAttribute("rotation", "0 0 0");
 
-          isAnimating = false; // 解除防抖锁定
+          isAnimating = false; 
         }
 
-        // 监听全局点击
-        window.addEventListener("click", () => {
-          // 【防御】如果没看到熊猫，或者正在播放中，就无视点击
+        // 【关键修复 1】将交互动作提取成一个独立的函数
+        function triggerInteraction(e) {
+          // 如果没有看到熊猫，或者正在播放动画，则无视
           if (!isMarkerVisible || isAnimating) return;
           
           isAnimating = true;
 
           // 动作 A：弹出牌子
-          // 【修复】先移除旧动画，触发浏览器重绘，再赋新动画，逼迫 A-Frame 重新播放
           sign.removeAttribute("animation__hide");
-          void sign.offsetWidth; // 魔法代码：强制刷新 DOM 状态
+          void sign.offsetWidth; 
           sign.setAttribute("animation__show", "property: scale; from: 0 0 0; to: 1 1 1; dur: 600; easing: easeOutElastic");
 
           // 动作 B：3秒后收回牌子
@@ -173,7 +169,18 @@
 
           }, 3000);
           animationTimeouts.push(t1);
-        });
+        }
+
+        // 【关键修复 2】同时绑定鼠标点击和手机触摸事件
+        window.addEventListener("click", triggerInteraction);
+        
+        // 专门针对手机端的触摸事件
+        window.addEventListener("touchstart", (e) => {
+          // 手机端触摸会优先触发 touchstart，
+          // isAnimating 锁可以防止随后的 click 造成双重触发
+          triggerInteraction(e);
+        }, { passive: true }); 
+
       });
     </script>
   </body>
