@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dancing Panda AR</title>
+    <title>Interactive Dancing Panda AR</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   </head>
@@ -15,228 +15,129 @@
       vr-mode-ui="enabled: false"
       renderer="logarithmicDepthBuffer: true;"
     >
-      <a-marker preset="hiro">
+      <a-assets>
+        <canvas id="signCanvas" width="512" height="256"></canvas>
+      </a-assets>
 
-        <!-- 落地阴影（固定在 marker 平面，随跳动缩放） -->
+      <a-marker preset="hiro">
         <a-cylinder
           position="0 0.01 0"
           radius="0.35"
           height="0.02"
           color="#000000"
           opacity="0.2"
-          animation="property: scale;
-                     from: 1 1 1; to: 0.5 1 0.5;
-                     dir: alternate; loop: true;
-                     dur: 600; easing: easeInOutSine"
+          animation="property: scale; from: 1 1 1; to: 0.5 1 0.5; dir: alternate; loop: true; dur: 600; easing: easeInOutSine"
         ></a-cylinder>
 
-        <!-- ===================================================
-             第1层：朝向修正
-             绕X轴 -90°，让熊猫正面对着摄像头
-             ===================================================  -->
         <a-entity rotation="-90 0 0">
+          
+          <a-entity id="bowLayer">
 
-          <!-- ===================================================
-               第2层：自转舞蹈
-               绕Y轴旋转（在修正后的坐标系里等于绕"视线轴"转）
-               =================================================== -->
-          <a-entity
-            animation="property: rotation;
-                       from: 0 0 0; to: 0 360 0;
-                       loop: true; dur: 4000; easing: linear"
-          >
-
-            <!-- ===================================================
-                 第3层：跳动 + 左右摇摆
-                 两个动画作用在不同属性上，可以写在同一个元素里
-                 =================================================== -->
             <a-entity
-              animation="property: position;
-                         from: 0 0 0.4; to: 0 0 1.1;
-                         dir: alternate; loop: true;
-                         dur: 600; easing: easeInOutSine"
-              animation__sway="property: rotation;
-                                from: -15 0 0; to: 15 0 0;
-                                dir: alternate; loop: true;
-                                dur: 800; easing: easeInOutSine"
+              animation="property: position; from: 0 0 0.4; to: 0 0 1.1; dir: alternate; loop: true; dur: 600; easing: easeInOutSine"
+              animation__sway="property: rotation; from: -15 0 0; to: 15 0 0; dir: alternate; loop: true; dur: 800; easing: easeInOutSine"
             >
 
-              <!-- ──────────────────────────────
-                   熊猫身体部件（坐标以身体中心为原点）
-                   ────────────────────────────── -->
-
-              <!-- 身体：白色椭球 -->
-              <a-sphere
-                position="0 0 0"
-                radius="0.5"
-                scale="1 1.1 0.9"
-                color="#FFFFFF"
-              ></a-sphere>
-
-              <!-- 肚子：浅灰，贴在身体正面 -->
-              <a-sphere
-                position="0 -0.05 0.42"
-                radius="0.28"
-                scale="1 1.1 0.5"
-                color="#EDEDED"
-              ></a-sphere>
-
-              <!-- 左前臂（黑色圆柱，斜向外） -->
-              <a-cylinder
-                position="-0.52 0.1 0.1"
-                radius="0.13"
-                height="0.45"
-                color="#1A1A1A"
-                rotation="0 0 60"
-                animation="property: rotation;
-                           from: 0 0 40; to: 0 0 80;
-                           dir: alternate; loop: true;
-                           dur: 400; easing: easeInOutSine"
-              ></a-cylinder>
-
-              <!-- 右前臂（与左臂反向摆动，交替效果） -->
-              <a-cylinder
-                position="0.52 0.1 0.1"
-                radius="0.13"
-                height="0.45"
-                color="#1A1A1A"
-                rotation="0 0 -60"
-                animation="property: rotation;
-                           from: 0 0 -80; to: 0 0 -40;
-                           dir: alternate; loop: true;
-                           dur: 400; easing: easeInOutSine"
-              ></a-cylinder>
-
-              <!-- 左后腿 -->
-              <a-cylinder
-                position="-0.25 -0.55 0"
-                radius="0.14"
-                height="0.38"
-                color="#1A1A1A"
-                rotation="15 0 10"
-              ></a-cylinder>
-
-              <!-- 右后腿 -->
-              <a-cylinder
-                position="0.25 -0.55 0"
-                radius="0.14"
-                height="0.38"
-                color="#1A1A1A"
-                rotation="15 0 -10"
-              ></a-cylinder>
-
-              <!-- 头：白色球，在身体上方 -->
-              <a-sphere
-                position="0 0.7 0"
-                radius="0.42"
-                color="#FFFFFF"
-              ></a-sphere>
-
-              <!-- 左耳 -->
-              <a-sphere
-                position="-0.3 1.05 0"
-                radius="0.15"
-                color="#1A1A1A"
-              ></a-sphere>
-
-              <!-- 右耳 -->
-              <a-sphere
-                position="0.3 1.05 0"
-                radius="0.15"
-                color="#1A1A1A"
-              ></a-sphere>
-
-              <!-- 左眼周黑斑 -->
-              <a-sphere
-                position="-0.16 0.73 0.36"
-                radius="0.14"
-                scale="1 0.85 0.5"
-                color="#1A1A1A"
-              ></a-sphere>
-
-              <!-- 右眼周黑斑 -->
-              <a-sphere
-                position="0.16 0.73 0.36"
-                radius="0.14"
-                scale="1 0.85 0.5"
-                color="#1A1A1A"
-              ></a-sphere>
-
-              <!-- 左眼白 -->
-              <a-sphere
-                position="-0.16 0.74 0.46"
-                radius="0.055"
-                color="#FFFFFF"
-              ></a-sphere>
-
-              <!-- 右眼白 -->
-              <a-sphere
-                position="0.16 0.74 0.46"
-                radius="0.055"
-                color="#FFFFFF"
-              ></a-sphere>
-
-              <!-- 左瞳孔（带眨眼动画） -->
-              <a-sphere
-                position="-0.16 0.74 0.5"
-                radius="0.032"
-                color="#000000"
-                animation="property: scale;
-                           from: 1 1 1; to: 1 0.08 1;
-                           dir: alternate; loop: true;
-                           dur: 120; delay: 3000;
-                           easing: easeInOutQuad"
-              ></a-sphere>
-
-              <!-- 右瞳孔（同步眨眼） -->
-              <a-sphere
-                position="0.16 0.74 0.5"
-                radius="0.032"
-                color="#000000"
-                animation="property: scale;
-                           from: 1 1 1; to: 1 0.08 1;
-                           dir: alternate; loop: true;
-                           dur: 120; delay: 3000;
-                           easing: easeInOutQuad"
-              ></a-sphere>
-
-              <!-- 鼻子 -->
-              <a-sphere
-                position="0 0.63 0.42"
-                radius="0.07"
-                scale="1.2 0.8 0.6"
-                color="#1A1A1A"
-              ></a-sphere>
-
-              <!-- 嘴巴（半圆弧） -->
-              <a-torus
-                position="0 0.56 0.41"
-                radius="0.07"
-                radius-tubular="0.012"
-                arc="180"
-                rotation="0 0 180"
-                color="#1A1A1A"
-              ></a-torus>
-
-              <!-- 尾巴 -->
-              <a-sphere
-                position="0 -0.15 -0.48"
-                radius="0.1"
-                color="#FFFFFF"
-              ></a-sphere>
+              <a-sphere position="0 0 0" radius="0.5" scale="1 1.1 0.9" color="#FFFFFF"></a-sphere>
+              <a-sphere position="0 -0.05 0.42" radius="0.28" scale="1 1.1 0.5" color="#EDEDED"></a-sphere>
+              
+              <a-cylinder position="-0.52 0.1 0.1" radius="0.13" height="0.45" color="#1A1A1A" rotation="0 0 60"
+                animation="property: rotation; from: 0 0 40; to: 0 0 80; dir: alternate; loop: true; dur: 400; easing: easeInOutSine"></a-cylinder>
+              <a-cylinder position="0.52 0.1 0.1" radius="0.13" height="0.45" color="#1A1A1A" rotation="0 0 -60"
+                animation="property: rotation; from: 0 0 -80; to: 0 0 -40; dir: alternate; loop: true; dur: 400; easing: easeInOutSine"></a-cylinder>
+              
+              <a-cylinder position="-0.25 -0.55 0" radius="0.14" height="0.38" color="#1A1A1A" rotation="15 0 10"></a-cylinder>
+              <a-cylinder position="0.25 -0.55 0" radius="0.14" height="0.38" color="#1A1A1A" rotation="15 0 -10"></a-cylinder>
+              
+              <a-sphere position="0 0.7 0" radius="0.42" color="#FFFFFF"></a-sphere>
+              <a-sphere position="-0.3 1.05 0" radius="0.15" color="#1A1A1A"></a-sphere>
+              <a-sphere position="0.3 1.05 0" radius="0.15" color="#1A1A1A"></a-sphere>
+              <a-sphere position="-0.16 0.73 0.36" radius="0.14" scale="1 0.85 0.5" color="#1A1A1A"></a-sphere>
+              <a-sphere position="0.16 0.73 0.36" radius="0.14" scale="1 0.85 0.5" color="#1A1A1A"></a-sphere>
+              <a-sphere position="-0.16 0.74 0.46" radius="0.055" color="#FFFFFF"></a-sphere>
+              <a-sphere position="0.16 0.74 0.46" radius="0.055" color="#FFFFFF"></a-sphere>
+              
+              <a-sphere position="-0.16 0.74 0.5" radius="0.032" color="#000000"
+                animation="property: scale; from: 1 1 1; to: 1 0.08 1; dir: alternate; loop: true; dur: 120; delay: 3000; easing: easeInOutQuad"></a-sphere>
+              <a-sphere position="0.16 0.74 0.5" radius="0.032" color="#000000"
+                animation="property: scale; from: 1 1 1; to: 1 0.08 1; dir: alternate; loop: true; dur: 120; delay: 3000; easing: easeInOutQuad"></a-sphere>
+              
+              <a-sphere position="0 0.63 0.42" radius="0.07" scale="1.2 0.8 0.6" color="#1A1A1A"></a-sphere>
+              <a-torus position="0 0.56 0.41" radius="0.07" radius-tubular="0.012" arc="180" rotation="0 0 180" color="#1A1A1A"></a-torus>
+              <a-sphere position="0 -0.15 -0.48" radius="0.1" color="#FFFFFF"></a-sphere>
+              <a-plane 
+                id="welcomeSign" 
+                position="0 0.3 0.65" 
+                width="1.2" 
+                height="0.6" 
+                material="src: #signCanvas; transparent: true" 
+                scale="0 0 0"
+              ></a-plane>
 
             </a-entity>
-            <!-- /第3层 -->
-
           </a-entity>
-          <!-- /第2层 -->
-
         </a-entity>
-        <!-- /第1层 -->
-
       </a-marker>
-
       <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // --- 1. 动态绘制日语标语牌 ---
+        const canvas = document.getElementById("signCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // 画木板底色
+        ctx.fillStyle = "#F5DEB3"; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 画边框
+        ctx.lineWidth = 16;
+        ctx.strokeStyle = "#8B4513";
+        ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
+
+        // 写字 (两行日文)
+        ctx.fillStyle = "#333333";
+        ctx.font = "bold 52px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("imd研究室へ", canvas.width / 2, canvas.height / 2 - 35);
+        ctx.fillText("ようこそ！", canvas.width / 2, canvas.height / 2 + 40);
+
+        // --- 2. 交互时间轴控制 ---
+        let isAnimating = false; // 防止用户在动画期间重复点击
+
+        // 监听全局点击/触摸事件
+        window.addEventListener("click", () => {
+          if (isAnimating) return;
+          isAnimating = true;
+
+          const sign = document.querySelector("#welcomeSign");
+          const bowLayer = document.querySelector("#bowLayer");
+
+          // 动作 A：弹出牌子（带有弹性特效）
+          sign.setAttribute("animation__show", "property: scale; from: 0 0 0; to: 1 1 1; dur: 600; easing: easeOutElastic");
+
+          // 动作 B：展示 3 秒后执行收回
+          setTimeout(() => {
+            sign.setAttribute("animation__hide", "property: scale; from: 1 1 1; to: 0 0 0; dur: 300; easing: easeInBack");
+
+            // 动作 C：等待牌子收回后，开始鞠躬
+            setTimeout(() => {
+              // 给鞠躬层添加向下弯腰的动画 (loop: 2 配合 alternate 代表下去再上来)
+              bowLayer.setAttribute("animation__bow", "property: rotation; from: 0 0 0; to: 40 0 0; dir: alternate; loop: 2; dur: 500; easing: easeInOutSine");
+
+              // 动作 D：等待鞠躬完成 (500ms * 2 = 1000ms)，清理动画属性并解除锁定
+              setTimeout(() => {
+                bowLayer.removeAttribute("animation__bow");
+                isAnimating = false;
+              }, 1000);
+
+            }, 350); // 牌子收回用时300ms，预留50ms缓冲
+
+          }, 3000);
+        });
+      });
+    </script>
   </body>
 </html>
