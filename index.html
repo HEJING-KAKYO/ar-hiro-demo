@@ -3,12 +3,109 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Interactive Dancing Panda AR</title>
+    <title>インタラクティブ・パンダAR</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; overflow: hidden; background: #000; }
+
+      /* ── Button panel ── */
+      #ui {
+        position: fixed;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 999;
+      }
+
+      .action-btn {
+        width: 72px;
+        height: 72px;
+        border: none;
+        border-radius: 18px;
+        cursor: pointer;
+        font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        color: #2b2b2b;
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow:
+          0 4px 16px rgba(0, 0, 0, 0.35),
+          0 1px 3px rgba(0, 0, 0, 0.2),
+          inset 0 1px 0 rgba(255,255,255,0.6);
+        transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s ease;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+      }
+
+      .action-btn .emoji { font-size: 22px; line-height: 1; }
+      .action-btn .label { font-size: 13px; }
+
+      .action-btn:hover { transform: scale(1.06); box-shadow: 0 6px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.6); }
+      .action-btn:active { transform: scale(0.93); }
+
+      .action-btn.active {
+        background: rgba(80, 200, 120, 0.92);
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(80, 200, 120, 0.55), inset 0 1px 0 rgba(255,255,255,0.3);
+      }
+
+      /* ── Marker hint ── */
+      #hint {
+        position: fixed;
+        bottom: 22px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        color: #fff;
+        font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+        font-size: 13px;
+        padding: 7px 18px;
+        border-radius: 20px;
+        pointer-events: none;
+        transition: opacity 0.5s ease;
+        white-space: nowrap;
+        z-index: 999;
+      }
+      #hint.hidden { opacity: 0; }
+    </style>
   </head>
 
-  <body style="margin:0; overflow:hidden;">
+  <body>
+    <!-- Action buttons -->
+    <div id="ui">
+      <button class="action-btn" id="btnWelcome">
+        <span class="emoji">🪧</span>
+        <span class="label">ようこそ</span>
+      </button>
+      <button class="action-btn" id="btnDance">
+        <span class="emoji">💃</span>
+        <span class="label">ダンス</span>
+      </button>
+      <button class="action-btn" id="btnBow">
+        <span class="emoji">🙇</span>
+        <span class="label">お辞儀</span>
+      </button>
+    </div>
+
+    <!-- Hint text -->
+    <div id="hint">📷 HIROマーカーをカメラに向けてください</div>
+
     <a-scene
       embedded
       arjs="sourceType: webcam; debugUIEnabled: false;"
@@ -20,168 +117,288 @@
       </a-assets>
 
       <a-marker preset="hiro">
+        <!-- Static shadow -->
         <a-cylinder
           position="0 0.01 0"
-          radius="0.35"
+          radius="0.38"
           height="0.02"
           color="#000000"
-          opacity="0.2"
-          animation="property: scale; from: 1 1 1; to: 0.5 1 0.5; dir: alternate; loop: true; dur: 600; easing: easeInOutSine"
+          opacity="0.18"
         ></a-cylinder>
 
+        <!-- Parent keeps panda upright -->
         <a-entity rotation="-90 0 0">
-          
-          <a-entity id="bowLayer">
 
-            <a-entity
-              animation="property: position; from: 0 0 0.4; to: 0 0 1.1; dir: alternate; loop: true; dur: 600; easing: easeInOutSine"
-              animation__sway="property: rotation; from: -15 0 0; to: 15 0 0; dir: alternate; loop: true; dur: 800; easing: easeInOutSine"
-            >
+          <!-- Root for bow animation -->
+          <a-entity id="pandaRoot">
 
-              <a-sphere position="0 0 0" radius="0.5" scale="1 1.1 0.9" color="#FFFFFF"></a-sphere>
-              <a-sphere position="0 -0.05 0.42" radius="0.28" scale="1 1.1 0.5" color="#EDEDED"></a-sphere>
-              
-              <a-cylinder position="-0.52 0.1 0.1" radius="0.13" height="0.45" color="#1A1A1A" rotation="0 0 60"
-                animation="property: rotation; from: 0 0 40; to: 0 0 80; dir: alternate; loop: true; dur: 400; easing: easeInOutSine"></a-cylinder>
-              <a-cylinder position="0.52 0.1 0.1" radius="0.13" height="0.45" color="#1A1A1A" rotation="0 0 -60"
-                animation="property: rotation; from: 0 0 -80; to: 0 0 -40; dir: alternate; loop: true; dur: 400; easing: easeInOutSine"></a-cylinder>
-              
-              <a-cylinder position="-0.25 -0.55 0" radius="0.14" height="0.38" color="#1A1A1A" rotation="15 0 10"></a-cylinder>
-              <a-cylinder position="0.25 -0.55 0" radius="0.14" height="0.38" color="#1A1A1A" rotation="15 0 -10"></a-cylinder>
-              
-              <a-sphere position="0 0.7 0" radius="0.42" color="#FFFFFF"></a-sphere>
-              <a-sphere position="-0.3 1.05 0" radius="0.15" color="#1A1A1A"></a-sphere>
-              <a-sphere position="0.3 1.05 0" radius="0.15" color="#1A1A1A"></a-sphere>
-              <a-sphere position="-0.16 0.73 0.36" radius="0.14" scale="1 0.85 0.5" color="#1A1A1A"></a-sphere>
-              <a-sphere position="0.16 0.73 0.36" radius="0.14" scale="1 0.85 0.5" color="#1A1A1A"></a-sphere>
-              <a-sphere position="-0.16 0.74 0.46" radius="0.055" color="#FFFFFF"></a-sphere>
-              <a-sphere position="0.16 0.74 0.46" radius="0.055" color="#FFFFFF"></a-sphere>
-              
-              <a-sphere position="-0.16 0.74 0.5" radius="0.032" color="#000000"
-                animation="property: scale; from: 1 1 1; to: 1 0.08 1; dir: alternate; loop: true; dur: 120; delay: 3000; easing: easeInOutQuad"></a-sphere>
-              <a-sphere position="0.16 0.74 0.5" radius="0.032" color="#000000"
-                animation="property: scale; from: 1 1 1; to: 1 0.08 1; dir: alternate; loop: true; dur: 120; delay: 3000; easing: easeInOutQuad"></a-sphere>
-              
-              <a-sphere position="0 0.63 0.42" radius="0.07" scale="1.2 0.8 0.6" color="#1A1A1A"></a-sphere>
-              <a-torus position="0 0.56 0.41" radius="0.07" radius-tubular="0.012" arc="180" rotation="0 0 180" color="#1A1A1A"></a-torus>
-              <a-sphere position="0 -0.15 -0.48" radius="0.1" color="#FFFFFF"></a-sphere>
-              <a-plane 
-                id="welcomeSign" 
-                position="0 0.3 0.65" 
-                width="1.2" 
-                height="0.6" 
-                material="src: #signCanvas; transparent: true" 
-                scale="0 0 0"
-              ></a-plane>
+            <!-- ── Body ── -->
+            <a-sphere position="0 0 0" radius="0.5" scale="1 1.1 0.9" color="#FFFFFF"></a-sphere>
+            <!-- Belly -->
+            <a-sphere position="0 -0.05 0.42" radius="0.28" scale="1 1.1 0.5" color="#EDEDED"></a-sphere>
 
-            </a-entity>
-          </a-entity>
+            <!-- ── Arms ── -->
+            <a-cylinder id="leftArm"  position="-0.52 0.1 0.1" radius="0.13" height="0.45" color="#1A1A1A" rotation="0 0 60"></a-cylinder>
+            <a-cylinder id="rightArm" position=" 0.52 0.1 0.1" radius="0.13" height="0.45" color="#1A1A1A" rotation="0 0 -60"></a-cylinder>
+
+            <!-- ── Legs ── -->
+            <a-cylinder position="-0.25 -0.55 0" radius="0.14" height="0.38" color="#1A1A1A" rotation="15 0  10"></a-cylinder>
+            <a-cylinder position=" 0.25 -0.55 0" radius="0.14" height="0.38" color="#1A1A1A" rotation="15 0 -10"></a-cylinder>
+
+            <!-- ── Head ── -->
+            <a-sphere id="pandaHead" position="0 0.7 0" radius="0.42" color="#FFFFFF"></a-sphere>
+
+            <!-- Ears -->
+            <a-sphere position="-0.3 1.05 0" radius="0.15" color="#1A1A1A"></a-sphere>
+            <a-sphere position=" 0.3 1.05 0" radius="0.15" color="#1A1A1A"></a-sphere>
+
+            <!-- Eye patches -->
+            <a-sphere position="-0.16 0.73 0.36" radius="0.14" scale="1 0.85 0.5" color="#1A1A1A"></a-sphere>
+            <a-sphere position=" 0.16 0.73 0.36" radius="0.14" scale="1 0.85 0.5" color="#1A1A1A"></a-sphere>
+
+            <!-- Eye whites -->
+            <a-sphere position="-0.16 0.74 0.46" radius="0.055" color="#FFFFFF"></a-sphere>
+            <a-sphere position=" 0.16 0.74 0.46" radius="0.055" color="#FFFFFF"></a-sphere>
+
+            <!-- Pupils – blink every ~3 s, also do a slow left↔right look -->
+            <a-sphere id="pupilLeft" position="-0.16 0.74 0.5" radius="0.032" color="#000000"
+              animation__blink="property: scale; from: 1 1 1; to: 1 0.08 1; dir: alternate; loop: true; dur: 110; delay: 2800; easing: easeInOutQuad"
+              animation__look="property: position; from: -0.16 0.74 0.5; to: -0.10 0.74 0.5; dir: alternate; loop: true; dur: 2200; delay: 400; easing: easeInOutSine">
+            </a-sphere>
+            <a-sphere id="pupilRight" position="0.16 0.74 0.5" radius="0.032" color="#000000"
+              animation__blink="property: scale; from: 1 1 1; to: 1 0.08 1; dir: alternate; loop: true; dur: 110; delay: 2800; easing: easeInOutQuad"
+              animation__look="property: position; from: 0.16 0.74 0.5; to: 0.22 0.74 0.5; dir: alternate; loop: true; dur: 2200; delay: 400; easing: easeInOutSine">
+            </a-sphere>
+
+            <!-- Nose -->
+            <a-sphere position="0 0.63 0.42" radius="0.07" scale="1.2 0.8 0.6" color="#1A1A1A"></a-sphere>
+            <!-- Smile arc -->
+            <a-torus position="0 0.56 0.41" radius="0.07" radius-tubular="0.012" arc="180" rotation="0 0 180" color="#1A1A1A"></a-torus>
+            <!-- Tail -->
+            <a-sphere position="0 -0.15 -0.48" radius="0.1" color="#FFFFFF"></a-sphere>
+
+            <!-- ── Welcome sign (hidden at start) ── -->
+            <!-- z=0.95 pushes sign well in front of face (eyes peak at z≈0.5) -->
+            <a-plane
+              id="welcomeSign"
+              position="0 0.85 0.95"
+              width="1.1"
+              height="0.55"
+              material="src: #signCanvas; transparent: true"
+              scale="0 0 0"
+            ></a-plane>
+
+          </a-entity><!-- /pandaRoot -->
         </a-entity>
       </a-marker>
+
       <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        // --- 1. 动态绘制日语标语牌 ---
-        const canvas = document.getElementById("signCanvas");
-        const ctx = canvas.getContext("2d");
+    document.addEventListener("DOMContentLoaded", () => {
 
-        ctx.fillStyle = "#F5DEB3"; 
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.lineWidth = 16;
-        ctx.strokeStyle = "#8B4513";
-        ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
-        ctx.fillStyle = "#333333";
-        ctx.font = "bold 52px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("imd研究室へ", canvas.width / 2, canvas.height / 2 - 35);
-        ctx.fillText("ようこそ！", canvas.width / 2, canvas.height / 2 + 40);
+      /* ─── Draw sign canvas ─── */
+      const canvas = document.getElementById("signCanvas");
+      const ctx    = canvas.getContext("2d");
 
-        // --- 2. 交互与状态控制 ---
-        let isAnimating = false;
-        let isMarkerVisible = false; 
-        let animationTimeouts = [];  
+      ctx.fillStyle = "#FFF8E7";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const marker = document.querySelector("a-marker");
-        const sign = document.querySelector("#welcomeSign");
-        const bowLayer = document.querySelector("#bowLayer");
+      // Decorative border
+      ctx.lineWidth   = 14;
+      ctx.strokeStyle = "#8B4513";
+      ctx.strokeRect(7, 7, canvas.width - 14, canvas.height - 14);
+      ctx.lineWidth   = 3;
+      ctx.strokeStyle = "#C8860A";
+      ctx.strokeRect(18, 18, canvas.width - 36, canvas.height - 36);
 
-        // 监听摄像头是否丢失了目标
-        marker.addEventListener("markerFound", () => {
-          isMarkerVisible = true;
-        });
+      // Text
+      ctx.fillStyle    = "#2C1A08";
+      ctx.font         = "bold 50px sans-serif";
+      ctx.textAlign    = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("imd研究室へ",  canvas.width / 2, canvas.height / 2 - 32);
+      ctx.fillText("ようこそ！",    canvas.width / 2, canvas.height / 2 + 38);
 
-        marker.addEventListener("markerLost", () => {
-          isMarkerVisible = false;
-          resetAnimationState(); 
-        });
+      /* ─── A-Frame element refs ─── */
+      const marker    = document.querySelector("a-marker");
+      const pandaRoot = document.querySelector("#pandaRoot");
+      const pandaHead = document.querySelector("#pandaHead");
+      const leftArm   = document.querySelector("#leftArm");
+      const rightArm  = document.querySelector("#rightArm");
+      const sign      = document.querySelector("#welcomeSign");
+      const hint      = document.getElementById("hint");
 
-        // 重置函数
-        function resetAnimationState() {
-          animationTimeouts.forEach(clearTimeout);
-          animationTimeouts = [];
+      /* ─── Button refs ─── */
+      const btns = {
+        welcome: document.getElementById("btnWelcome"),
+        dance:   document.getElementById("btnDance"),
+        bow:     document.getElementById("btnBow"),
+      };
 
-          sign.removeAttribute("animation__show");
-          sign.removeAttribute("animation__hide");
-          bowLayer.removeAttribute("animation__bow");
+      /* ─── State ─── */
+      let markerVisible = false;
+      let busy          = false;
+      let timers        = [];
 
-          sign.setAttribute("scale", "0 0 0");
-          bowLayer.setAttribute("rotation", "0 0 0");
-
-          isAnimating = false; 
-        }
-
-        // 【关键修复 1】将交互动作提取成一个独立的函数
-        function triggerInteraction(e) {
-          // 如果没有看到熊猫，或者正在播放动画，则无视
-          if (!isMarkerVisible || isAnimating) return;
-          
-          isAnimating = true;
-
-          // 动作 A：弹出牌子
-          sign.removeAttribute("animation__hide");
-          void sign.offsetWidth; 
-          sign.setAttribute("animation__show", "property: scale; from: 0 0 0; to: 1 1 1; dur: 600; easing: easeOutElastic");
-
-          // 动作 B：3秒后收回牌子
-          let t1 = setTimeout(() => {
-            sign.removeAttribute("animation__show");
-            void sign.offsetWidth; 
-            sign.setAttribute("animation__hide", "property: scale; from: 1 1 1; to: 0 0 0; dur: 300; easing: easeInBack");
-
-            // 动作 C：牌子收回后，开始鞠躬
-            let t2 = setTimeout(() => {
-              bowLayer.removeAttribute("animation__bow");
-              void bowLayer.offsetWidth;
-              bowLayer.setAttribute("animation__bow", "property: rotation; from: 0 0 0; to: 40 0 0; dir: alternate; loop: 2; dur: 500; easing: easeInOutSine");
-
-              // 动作 D：鞠躬完成，解除锁定
-              let t3 = setTimeout(() => {
-                bowLayer.removeAttribute("animation__bow");
-                isAnimating = false;
-              }, 1000);
-              animationTimeouts.push(t3);
-
-            }, 350);
-            animationTimeouts.push(t2);
-
-          }, 3000);
-          animationTimeouts.push(t1);
-        }
-
-        // 【关键修复 2】同时绑定鼠标点击和手机触摸事件
-        window.addEventListener("click", triggerInteraction);
-        
-        // 专门针对手机端的触摸事件
-        window.addEventListener("touchstart", (e) => {
-          // 手机端触摸会优先触发 touchstart，
-          // isAnimating 锁可以防止随后的 click 造成双重触发
-          triggerInteraction(e);
-        }, { passive: true }); 
-
+      /* ─── Marker tracking ─── */
+      marker.addEventListener("markerFound", () => {
+        markerVisible = true;
+        hint.classList.add("hidden");
       });
+      marker.addEventListener("markerLost", () => {
+        markerVisible = false;
+        hint.classList.remove("hidden");
+        reset();
+      });
+
+      /* ─── Helper: schedule a timeout and track it ─── */
+      function after(ms, fn) {
+        const id = setTimeout(fn, ms);
+        timers.push(id);
+        return id;
+      }
+
+      /* ─── Reset everything to idle ─── */
+      function reset() {
+        timers.forEach(clearTimeout);
+        timers = [];
+        busy = false;
+
+        // Deactivate buttons
+        Object.values(btns).forEach(b => b.classList.remove("active"));
+
+        // Hide sign
+        sign.removeAttribute("animation__show");
+        sign.removeAttribute("animation__hide");
+        sign.setAttribute("scale", "0 0 0");
+
+        // Arms back to resting position
+        leftArm.removeAttribute("animation__wave");
+        rightArm.removeAttribute("animation__wave");
+        leftArm.setAttribute("rotation",  "0 0 60");
+        rightArm.setAttribute("rotation", "0 0 -60");
+
+        // Head sway off
+        pandaHead.removeAttribute("animation__headsway");
+
+        // Dance spin / bounce off
+        pandaRoot.removeAttribute("animation__spin");
+        pandaRoot.removeAttribute("animation__bounce");
+        pandaRoot.setAttribute("position", "0 0 0");
+
+        // Bow root back upright
+        pandaRoot.removeAttribute("animation__bow");
+        pandaRoot.setAttribute("rotation", "0 0 0");
+      }
+
+      /* ══════════════════════════════════════════
+         ACTION: ようこそ (Welcome)
+      ══════════════════════════════════════════ */
+      function doWelcome() {
+        reset();
+        if (!markerVisible) return;
+        busy = true;
+        btns.welcome.classList.add("active");
+
+        // Raise right arm to hold sign
+        rightArm.setAttribute("rotation", "0 0 -130");
+
+        // Pop sign in
+        sign.setAttribute("animation__show",
+          "property: scale; from: 0 0 0; to: 1 1 1; dur: 550; easing: easeOutElastic");
+
+        // Hold 3 s then retract
+        after(3400, () => {
+          sign.removeAttribute("animation__show");
+          sign.setAttribute("animation__hide",
+            "property: scale; from: 1 1 1; to: 0 0 0; dur: 350; easing: easeInBack");
+
+          after(400, () => {
+            rightArm.setAttribute("rotation", "0 0 -60"); // arm back down
+            after(300, reset);
+          });
+        });
+      }
+
+      /* ══════════════════════════════════════════
+         ACTION: ダンス (Dance)
+         Phase 1 (0–1.5 s): arm wave + head sway to warm up
+         Phase 2 (1.5–5.5 s): 360 spin + hop + rapid arm flutter + head bob
+      ══════════════════════════════════════════ */
+      function doDance() {
+        reset();
+        if (!markerVisible) return;
+        busy = true;
+        btns.dance.classList.add("active");
+
+        // ── Phase 1: warm-up wave ──
+        leftArm.setAttribute("animation__wave",
+          "property: rotation; from: 0 0 45; to: 0 0 105; dir: alternate; loop: true; dur: 320; easing: easeInOutSine");
+        rightArm.setAttribute("animation__wave",
+          "property: rotation; from: 0 0 -105; to: 0 0 -45; dir: alternate; loop: true; dur: 320; delay: 160; easing: easeInOutSine");
+        pandaHead.setAttribute("animation__headsway",
+          "property: rotation; from: 0 0 -12; to: 0 0 12; dir: alternate; loop: true; dur: 380; easing: easeInOutSine");
+
+        // ── Phase 2: spin + hop + faster flutter ──
+        after(1500, () => {
+          // 360 spin: rotate around world-up axis
+          // In local space of the -90 X parent, world +Y = local +Z
+          pandaRoot.setAttribute("animation__spin",
+            "property: rotation; from: 0 0 0; to: 0 0 360; loop: true; dur: 1400; easing: linear");
+
+          // Hop up-down: world +Y = local +Z position
+          pandaRoot.setAttribute("animation__bounce",
+            "property: position; from: 0 0 0; to: 0 0 0.22; dir: alternate; loop: true; dur: 350; easing: easeOutSine");
+
+          // Arms spread wide + rapid flutter during spin
+          leftArm.removeAttribute("animation__wave");
+          rightArm.removeAttribute("animation__wave");
+          leftArm.setAttribute("animation__wave",
+            "property: rotation; from: 0 0 80; to: 0 0 115; dir: alternate; loop: true; dur: 180; easing: easeInOutSine");
+          rightArm.setAttribute("animation__wave",
+            "property: rotation; from: 0 0 -115; to: 0 0 -80; dir: alternate; loop: true; dur: 180; delay: 90; easing: easeInOutSine");
+
+          // Head rapid nod
+          pandaHead.removeAttribute("animation__headsway");
+          pandaHead.setAttribute("animation__headsway",
+            "property: rotation; from: 0 0 -20; to: 0 0 20; dir: alternate; loop: true; dur: 220; easing: easeInOutSine");
+        });
+
+        // ── End after ~5.5 s total ──
+        after(5500, reset);
+      }
+
+      /* ══════════════════════════════════════════
+         ACTION: お辞儀 (Bow)
+      ══════════════════════════════════════════ */
+      function doBow() {
+        reset();
+        if (!markerVisible) return;
+        busy = true;
+        btns.bow.classList.add("active");
+
+        // Two bows (loop: 2, dir: alternate → down–up–down–up = 4 half-cycles = 2 full bows)
+        pandaRoot.setAttribute("animation__bow",
+          "property: rotation; from: 0 0 0; to: 45 0 0; dir: alternate; loop: 2; dur: 550; easing: easeInOutSine");
+
+        // Total: 2 loops × 2 × 550 ms = 2200 ms + small buffer
+        after(2400, reset);
+      }
+
+      /* ─── Button wiring (click + touch, no double-fire) ─── */
+      function wire(btn, action) {
+        btn.addEventListener("pointerdown", (e) => {
+          e.preventDefault();
+          action();
+        });
+      }
+      wire(btns.welcome, doWelcome);
+      wire(btns.dance,   doDance);
+      wire(btns.bow,     doBow);
+
+    });
     </script>
   </body>
 </html>
